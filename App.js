@@ -8,9 +8,11 @@ import {
   TouchableHighlight,
   TextInput,
   ScrollView,
+  Alert,
 } from "react-native";
 import { theme } from "./color";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Fontisto } from "@expo/vector-icons";
 // TouchableOpacity => 클릭 시 전환 발생 , TouchableHighlight => 클릭 시 전환 미발생
 export default function App() {
   useEffect(() => {
@@ -45,7 +47,24 @@ export default function App() {
   const loadToDos = async () => {
     const s = await AsyncStorage.getItem("STORAGE_KEY");
     setToDos(JSON.parse(s));
-    console.log(s);
+  };
+  const deleteToDo = async (key) => {
+    Alert.alert("Delete To Do", "Are you sure", [
+      {
+        text: "Cancel",
+      },
+      {
+        text: "Yes",
+        style: "destructive",
+        onPress: async () => {
+          const newToDos = { ...toDos };
+          delete newToDos[key];
+          setToDos(newToDos);
+          await saveToDos(newToDos);
+        },
+      },
+    ]);
+    return;
   };
 
   return (
@@ -81,6 +100,10 @@ export default function App() {
             toDos[key].work === working ? (
               <View style={styles?.toDo} key={key}>
                 <Text style={styles?.toDoText}>{toDos[key].text}</Text>
+                <TouchableOpacity onPress={() => deleteToDo(key)}>
+                  {/* <Text>❌</Text> */}
+                  <Fontisto name="trash" size={24} color={theme.gray} />
+                </TouchableOpacity>
               </View>
             ) : null
           )}
@@ -120,6 +143,9 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 40,
     borderRadius: 15,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   toDoText: {
     color: "white",
